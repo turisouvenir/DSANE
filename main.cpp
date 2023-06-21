@@ -4,6 +4,9 @@
 #include <string>
 #include <chrono>
 #include <bits/stdc++.h>
+#include <vector>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
@@ -131,6 +134,29 @@ bool itemExists(const string &itemId, const string &itemName)
     return false;
 }
 
+
+string toPascalCase(const string& itemName)
+{
+    string pascalCaseName = itemName;
+    bool capitalizeNext = true;
+
+    for (char& c : pascalCaseName) {
+        if (isalpha(c)) {
+            if (capitalizeNext) {
+                c = toupper(c);
+                capitalizeNext = false;
+            } else {
+                c = tolower(c);
+            }
+        } else {
+            capitalizeNext = true;
+        }
+    }
+
+    return pascalCaseName;
+}
+
+
 void addItem(const string &itemId, const string &itemName, const string &quantity, const string &regDate)
 {
     // Validate date format
@@ -149,7 +175,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
 
     try
     {
-        int id = std::stoi(itemId); // Convert itemId to an integer
+        int id = stoi(itemId); // Convert itemId to an integer
         // Check if id is a valid positive integer
         if (id <= 0)
         {
@@ -157,7 +183,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
             return;
         }
     }
-    catch (const std::invalid_argument &e)
+    catch (const invalid_argument &e)
     {
         cout << "Id should be a valid integer." << endl;
         return;
@@ -165,7 +191,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
 
     try
     {
-        int qty = std::stoi(quantity); // Convert quantity to an integer
+        int qty = stoi(quantity); // Convert quantity to an integer
         // Check if qty is a valid non-negative integer
         if (qty < 0)
         {
@@ -173,7 +199,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
             return;
         }
     }
-    catch (const std::invalid_argument &e)
+    catch (const invalid_argument &e)
     {
         cout << "Quantity should be a valid integer." << endl;
         return;
@@ -189,7 +215,8 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
     ofstream file("database.csv", ios_base::app); // Open file in append mode
     if (file.is_open())
     {
-        file << itemId << "," << itemName << "," << quantity << "," << regDate << endl;
+    	string pascalCaseName = toPascalCase(itemName);
+        file << itemId << "," << pascalCaseName << "," << quantity << "," << regDate << endl;
         file.close();
         cout << "Item added successfully!" << endl;
     }
