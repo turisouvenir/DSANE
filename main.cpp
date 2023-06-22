@@ -20,7 +20,14 @@ struct Item
 
 bool compareItems(const Item &item1, const Item &item2)
 {
-    return item1.itemName < item2.itemName;
+    string itemName1 = item1.itemName;
+    string itemName2 = item2.itemName;
+
+    // Convert both item names to lowercase
+    transform(itemName1.begin(), itemName1.end(), itemName1.begin(), ::tolower);
+    transform(itemName2.begin(), itemName2.end(), itemName2.begin(), ::tolower);
+
+    return itemName1 < itemName2;
 }
 
 bool isValidDateFormat(const string &dateString)
@@ -82,6 +89,7 @@ void listItems()
     ifstream file("database.csv");
     string line;
     vector<Item> items;
+    set<string> uniqueItems; // Set to track unique items
 
     while (getline(file, line))
     {
@@ -93,8 +101,14 @@ void listItems()
         getline(iss, quantity, ',');
         getline(iss, regDate, ',');
 
-        Item item{itemId, itemName, quantity, regDate};
-        items.push_back(item);
+        // Check if the item has already been added
+        string uniqueKey = itemId + itemName;
+        if (uniqueItems.count(uniqueKey) == 0)
+        {
+            Item item{itemId, itemName, quantity, regDate};
+            items.push_back(item);
+            uniqueItems.insert(uniqueKey);
+        }
     }
 
     file.close();
@@ -109,6 +123,7 @@ void listItems()
              << "\t\tQuantity: " << item.quantity << "\t\tReg Date: " << item.regDate << endl;
     }
 }
+
 
 bool itemExists(const string &itemId, const string &itemName)
 {
@@ -134,28 +149,33 @@ bool itemExists(const string &itemId, const string &itemName)
     return false;
 }
 
-
-string toPascalCase(const string& itemName)
+string toPascalCase(const string &itemName)
 {
     string pascalCaseName = itemName;
     bool capitalizeNext = true;
 
-    for (char& c : pascalCaseName) {
-        if (isalpha(c)) {
-            if (capitalizeNext) {
+    for (char &c : pascalCaseName)
+    {
+        if (isalpha(c))
+        {
+            if (capitalizeNext)
+            {
                 c = toupper(c);
                 capitalizeNext = false;
-            } else {
+            }
+            else
+            {
                 c = tolower(c);
             }
-        } else {
+        }
+        else
+        {
             capitalizeNext = true;
         }
     }
 
     return pascalCaseName;
 }
-
 
 void addItem(const string &itemId, const string &itemName, const string &quantity, const string &regDate)
 {
@@ -169,7 +189,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
     // Validate date is after today
     if (!isDateAfterToday(regDate))
     {
-        cout << "Invalid registration date! Date should be after today." << endl;
+        cout << "Invalid registration date! Date should be today or after today." << endl;
         return;
     }
 
@@ -205,7 +225,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
         return;
     }
 
-    if (itemExists(itemId, itemName))
+    if (itemExists(itemId, itemName))   
     {
         cout << "The item with the same id or name already exists." << endl;
         return;
@@ -215,7 +235,7 @@ void addItem(const string &itemId, const string &itemName, const string &quantit
     ofstream file("database.csv", ios_base::app); // Open file in append mode
     if (file.is_open())
     {
-    	string pascalCaseName = toPascalCase(itemName);
+        string pascalCaseName = toPascalCase(itemName);
         file << itemId << "," << pascalCaseName << "," << quantity << "," << regDate << endl;
         file.close();
         cout << "Item added successfully!" << endl;
